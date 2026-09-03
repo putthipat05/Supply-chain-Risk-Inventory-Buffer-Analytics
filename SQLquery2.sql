@@ -49,3 +49,49 @@ else 'None core Buttom(20%)'
 end as patero_tier
 from total_spend
 order by total_spend_usd desc
+
+
+--4,Moving Average Lead Time & Buffer Assessment
+select
+a.po_id,
+a.order_date,
+(a.actual_delivery_date - a.order_date) as po_lead_time_days,
+round(
+      avg(a.actual_delivery_date - a.order_date)
+      over(order by a.order_date  
+	  rows between 2 preceding and current row ),2) as moving_avg_lead_time
+from fact_purchase_orders as a
+inner join dim_parts as b
+on a.part_id = b.part_id
+where b.part_name = 'High-NA EUV Mirror Module'
+and a.status = 'COMPLETED'
+order by order_date asc
+
+
+--5.Executive Supply Chain Risk Matrix & Matrix Pivoting
+with tier_1 as (
+select
+a.country,
+sum(case when c.criticality_tier = 'Tier 1' then 1 else 0 end) as Tier1_orders,
+sum(case when c.criticality_tier = 'Tier 2' then 1 else 0 end) as Tier2_orders,
+sum(case when c.criticality_tier = 'Tier 3' then 1 else 0 end) as Tier3_orders,
+count(b.po_id) as total_orders
+from dim_suppliers as a
+inner join fact_purchase_orders as b
+on a.supplier_id = b.supplier_id
+inner join dim_parts as c
+on b.part_id = c.part_id
+where b.status = 'COMPLETED'
+group by
+a.country
+)
+
+select
+country,
+Tier1_orders,
+Tier2_orders,
+Tier3_orders,
+total_orders,
+round((Tier1_orders * 100) / nullif(total_orders,0) ,2) as Tier1_ratio_pct
+from tier_1
+order by Tier1_ratio_pct desc
