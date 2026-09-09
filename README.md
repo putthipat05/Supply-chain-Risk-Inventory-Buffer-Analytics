@@ -6,7 +6,7 @@
 
 ## Data set
 - Custom-generated synthetic supply chain dataset (~10k+ rows across 3 Relational Tables: dim_suppliers, dim_parts, and fact_purchase_orders) designed to mimic real-world semiconductor manufacturing operations
-
+- Here is the [SQL Query](https://github.com/putthipat05/Supply-chain-Risk-Inventory-Buffer-Analytics/blob/main/SQLquery2.sql) if you are interested how the structure is
 
 ## Tools
 - SQL
